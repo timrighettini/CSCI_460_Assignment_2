@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1391923829 source:c:\users\czardragon\documents\github\csci_460_assignment_1\csci_460_assignment_1\main.cpp
+	<map>
+	<iostream>
+	<vector>
+	<map>
+	<algorithm>
+
