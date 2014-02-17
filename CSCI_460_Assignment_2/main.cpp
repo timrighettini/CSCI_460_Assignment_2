@@ -31,22 +31,25 @@ struct Node // Struct for holding node information
     std::vector<ConnectedNode> children; // List of descendants
     std::string name; // Name of the Node
 
-    // To be used for Uniform Cost Search
+    // To be used for Uniform Cost and A* Search
     // Will be used for the cost up to this Node,
     // and can be made smaller and smaller as time goes on
-    int totalCost;
+    int gCost;
+
+    // To be used for A* search and a special comparator function
+    int hCost;
 
     bool isQueued; // If the Node is expanded, this will be true, will prevent loops
 };
 
-// Used for a sorting comparison
+// Used for UCS sorting comparison
 struct FunctorUCS
 {
         // Overloading () operators for std::sort()
     bool operator ()(Node *a, Node *b)
     {
-        if (a->totalCost < b->totalCost) return true;
-        if (a->totalCost > b->totalCost) return false;
+        if (a->gCost < b->gCost) return true;
+        if (a->gCost > b->gCost) return false;
 
         if (a->name < b->name) return true;
         if (a->name > b->name) return false;
@@ -54,6 +57,22 @@ struct FunctorUCS
         return false;
     }
 } functorUCS;
+
+// Used for A* sorting comparison
+struct FunctorAStar
+{
+        // Overloading () operators for std::sort()
+    bool operator ()(Node *a, Node *b)
+    {
+        if ((a->gCost + a->hCost) < (b->gCost + b->hCost)) return true;
+        if ((a->gCost + a->hCost) > (b->gCost + b->hCost)) return false;
+
+        if (a->name < b->name) return true;
+        if (a->name > b->name) return false;
+
+        return false;
+    }
+} functorAStar;
 
 bool isUCS = false;
 
@@ -86,7 +105,7 @@ int main(int argc, char* argv[])
 
     n->name = "Alexandria";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Matruh", 159));
     n->children.push_back(ConnectedNode("Cairo", 112));
     n->children.push_back(ConnectedNode("Nekhel", 245));
@@ -98,7 +117,7 @@ int main(int argc, char* argv[])
 
     n->name = "Nekhel";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Alexandria", 245));
     n->children.push_back(ConnectedNode("Suez", 72));
     n->children.push_back(ConnectedNode("Quseir", 265));
@@ -110,7 +129,7 @@ int main(int argc, char* argv[])
 
     n->name = "Suez";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Nekhel", 72));
 
     cityNodes[n->name] = n;
@@ -120,7 +139,7 @@ int main(int argc, char* argv[])
 
     n->name = "Quseir";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Sohag", 163));
     n->children.push_back(ConnectedNode("Nekhel", 265));
 
@@ -131,7 +150,7 @@ int main(int argc, char* argv[])
 
     n->name = "Sohag";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Mut", 184));
     n->children.push_back(ConnectedNode("Qena", 69));
     n->children.push_back(ConnectedNode("Quseir", 163));
@@ -143,7 +162,7 @@ int main(int argc, char* argv[])
 
     n->name = "Qena";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Luxor", 33));
     n->children.push_back(ConnectedNode("Sohag", 69));
 
@@ -154,7 +173,7 @@ int main(int argc, char* argv[])
 
     n->name = "Luxor";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Qena", 33));
 
     cityNodes[n->name] = n;
@@ -164,7 +183,7 @@ int main(int argc, char* argv[])
 
     n->name = "Kharga";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Mut", 98));
 
     cityNodes[n->name] = n;
@@ -174,7 +193,7 @@ int main(int argc, char* argv[])
 
     n->name = "Mut";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Qasr Farafra", 126));
     n->children.push_back(ConnectedNode("Sohag", 184));
     n->children.push_back(ConnectedNode("Kharga", 98));
@@ -186,7 +205,7 @@ int main(int argc, char* argv[])
 
     n->name = "Qasr Farafra";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Bawiti", 104));
     n->children.push_back(ConnectedNode("Mut", 126));
 
@@ -197,7 +216,7 @@ int main(int argc, char* argv[])
 
     n->name = "Bawiti";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Siwa", 210));
     n->children.push_back(ConnectedNode("Cairo", 186));
     n->children.push_back(ConnectedNode("Qasr Farafra", 104));
@@ -209,7 +228,7 @@ int main(int argc, char* argv[])
 
     n->name = "Cairo";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Bawiti", 186));
     n->children.push_back(ConnectedNode("Alexandria", 112));
     n->children.push_back(ConnectedNode("Asyut", 198));
@@ -221,7 +240,7 @@ int main(int argc, char* argv[])
 
     n->name = "Asyut";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Cairo", 198));
 
     cityNodes[n->name] = n;
@@ -231,7 +250,7 @@ int main(int argc, char* argv[])
 
     n->name = "Siwa";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Matruh", 181));
     n->children.push_back(ConnectedNode("Bawiti", 210));
 
@@ -242,7 +261,7 @@ int main(int argc, char* argv[])
 
     n->name = "Matruh";
     n->isQueued = false;
-    n->totalCost = 0;
+    n->gCost = 0;
     n->children.push_back(ConnectedNode("Siwa", 159));
     n->children.push_back(ConnectedNode("Bawiti", 210));
 
@@ -358,7 +377,9 @@ void GeneralSearch(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &
 
         // Queuing Function
         //EnqueueGreedy(cityNodes, currentNodes, nodeToTest, h1); // Greedy Search H1
-        EnqueueGreedy(cityNodes, currentNodes, nodeToTest, h2); // Greedy Search H2
+        //EnqueueGreedy(cityNodes, currentNodes, nodeToTest, h2); // Greedy Search H2
+        //EnqueueAStar(cityNodes, currentNodes, nodeToTest, h1); // AStar Search H1
+        EnqueueAStar(cityNodes, currentNodes, nodeToTest, h2); // AStar Search H2
 
         exploredNodes.push_back(nodeToTest);
     }
@@ -426,14 +447,14 @@ void EnqueueUCS(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &cur
         if (!cityNodes[nodeToTest->children[i].name]->isQueued) // Check to see if the node has already been expanded
         {
             currentNodes.push_back(cityNodes[nodeToTest->children[i].name]);
-            currentNodes[currentNodes.size() - 1]->totalCost = nodeToTest->totalCost + nodeToTest->children[i].cost;
+            currentNodes[currentNodes.size() - 1]->gCost = nodeToTest->gCost + nodeToTest->children[i].cost;
             currentNodes[currentNodes.size() - 1]->isQueued = true;
         }
         // Check where the cost for something to a node is less than another way, and overwrite the more expensive cost
-        else if (nodeToTest->totalCost + nodeToTest->children[i].cost < cityNodes[nodeToTest->children[i].name]->totalCost)
+        else if (nodeToTest->gCost + nodeToTest->children[i].cost < cityNodes[nodeToTest->children[i].name]->gCost)
         {
             // This is why I like pointers -> I do not need to loop again to find what I need to change
-            cityNodes[nodeToTest->children[i].name]->totalCost = nodeToTest->totalCost + nodeToTest->children[i].cost;
+            cityNodes[nodeToTest->children[i].name]->gCost = nodeToTest->gCost + nodeToTest->children[i].cost;
         }
     }
 
@@ -445,36 +466,55 @@ void EnqueueUCS(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &cur
 
 void EnqueueGreedy(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &currentNodes, Node *nodeToTest, std::map<std::string, ConnectedNode*> &hTable)
 {
-    // Add values from expanded node into a temp vector
-    std::vector<Node*> expandedNames;
+    // For greedy search, always sort the entire queue based upon h(x)
+    // of who enters, versus just a level of nodes. Refer to lecture 6 -> p.42
 
     for (unsigned int i = 0; i < nodeToTest->children.size(); i++)
     {
         if (!cityNodes[nodeToTest->children[i].name]->isQueued) // Check to see if the node has already been expanded
         {
-            expandedNames.push_back(cityNodes[nodeToTest->children[i].name]);
-            expandedNames[expandedNames.size() - 1]->totalCost = hTable[nodeToTest->children[i].name]->cost;
-            expandedNames[expandedNames.size() - 1]->isQueued = true;
+            currentNodes.push_back(cityNodes[nodeToTest->children[i].name]);
+            currentNodes[currentNodes.size() - 1]->gCost = 0;
+            currentNodes[currentNodes.size() - 1]->hCost = hTable[nodeToTest->children[i].name]->cost;
+            currentNodes[currentNodes.size() - 1]->isQueued = true;
         }
     }
 
     // Sort Them -> First based upon cost, and if they are the same, then by name
     // Refer to functorUCS for the specific comparison used for std::sort()
     // Notice I do not need a temp list here, I am adding straight to currentNodes
-    std::sort(expandedNames.begin(), expandedNames.end(), functorUCS);
-
-    // Add in the values from expanded names as seen in DFS
-    // That way, we can turn around if the node we use is not correct
-    while (!expandedNames.empty())
-    {
-        currentNodes.insert(currentNodes.begin(), cityNodes[expandedNames[expandedNames.size() - 1]->name]);
-        expandedNames.pop_back();
-    }
+    std::sort(currentNodes.begin(), currentNodes.end(), functorAStar);
 }
 
 void EnqueueAStar(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &currentNodes, Node *nodeToTest, std::map<std::string, ConnectedNode*> &hTable)
 {
+    // For A* search, always sort the entire queue based upon total cost
+    // of who enters, versus just a level of nodes. Refer to lecture 6 -> p.46
+    isUCS = true;
 
+    for (unsigned int i = 0; i < nodeToTest->children.size(); i++)
+    {
+        if (!cityNodes[nodeToTest->children[i].name]->isQueued) // Check to see if the node has already been expanded
+        {
+            currentNodes.push_back(cityNodes[nodeToTest->children[i].name]);
+            currentNodes[currentNodes.size() - 1]->gCost = nodeToTest->gCost + nodeToTest->children[i].cost; // This is g(x), as in UCS
+            currentNodes[currentNodes.size() - 1]->hCost = hTable[nodeToTest->children[i].name]->cost; // This is h(x) for A*
+            currentNodes[currentNodes.size() - 1]->isQueued = true;
+        }
+        // Check where the cost for something to a node is less than another way, and overwrite the more expensive cost
+        // Formula: nodeToTest g(x) + child g(x) + child h(x) < current inherited child g(x) + child h(x)
+        // Which derives back to: nodeToTest g(x) + child g(x) < current inherited child g(x) -> child h(x) cancels out
+        else if (nodeToTest->gCost + nodeToTest->children[i].cost < cityNodes[nodeToTest->children[i].name]->gCost)
+        {
+            // This is why I like pointers -> I do not need to loop again to find what I need to change
+            cityNodes[nodeToTest->children[i].name]->gCost = nodeToTest->gCost + nodeToTest->children[i].cost;
+        }
+    }
+
+    // Sort Them -> First based upon cost, and if they are the same, then by name
+    // Refer to functorUCS for the specific comparison used for std::sort()
+    // Notice I do not need a temp list here, I am adding straight to currentNodes
+    std::sort(currentNodes.begin(), currentNodes.end(), functorAStar);
 }
 
 // Function for GoalTest -> Declared here versus inside GeneralSearch() to make things cleaner
@@ -493,7 +533,7 @@ bool GoalTest(Node *nodeToTest, Node *goalNode)
         if (nodeToTest->name == goalNode->name) // Should I stop on first hit or not?
         {
             std::cout << "Found GOAL!!!!! -> " << goalNode->name << std::endl;
-            std::cout << "Cost to get to GoalNode: " << goalNode->totalCost << std::endl;
+            std::cout << "Cost g(x) to get to GoalNode: " << goalNode->gCost << std::endl;
             return true;
         }
     }
