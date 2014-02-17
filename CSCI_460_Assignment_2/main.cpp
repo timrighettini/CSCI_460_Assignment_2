@@ -58,10 +58,13 @@ struct FunctorUCS
 bool isUCS = false;
 
 // Function Prototypes
-void GeneralSearch(std::map<std::string, Node*>&, std::vector<Node*> &, std::vector<Node*> &, Node *);
+void GeneralSearch(std::map<std::string, Node*>&, std::vector<Node*> &, std::vector<Node*> &, Node *, std::map<std::string, ConnectedNode*> &, std::map<std::string, ConnectedNode*> &);
 void EnqueueBFS(std::map<std::string, Node*>&, std::vector<Node*> &, Node *);
 void EnqueueDFS(std::map<std::string, Node*>&, std::vector<Node*> &, Node *);
 void EnqueueUCS(std::map<std::string, Node*>&, std::vector<Node*> &, Node *);
+void EnqueueGreedy(std::map<std::string, Node*>&, std::vector<Node*> &, Node *, std::map<std::string, ConnectedNode*> &);
+void EnqueueAStar(std::map<std::string, Node*>&, std::vector<Node*> &, Node *, std::map<std::string, ConnectedNode*> &);
+
 bool GoalTest(Node *, Node* );
 
 int main(int argc, char* argv[])
@@ -71,6 +74,10 @@ int main(int argc, char* argv[])
     std::vector<Node*> currentNodes; // Will be the vector used for Queuing for the three Queuing functions
     std::vector<Node*> exploredNodes; // Will be the vector used for keeping track of what has been found so far
     // NOTE: I use this vector as a queue. stack, and priority queue all at once to save on instantiating different lists
+
+    // Instantiate the Tables for h1, h2
+    std::map<std::string, ConnectedNode*> h1;
+    std::map<std::string, ConnectedNode*> h2;
 
     // Build the tree
 
@@ -245,11 +252,42 @@ int main(int argc, char* argv[])
     currentNodes.push_back(cityNodes["Alexandria"]);
     currentNodes[0]->isQueued = true;
 
+    // Populate the h1, h2 tables with the appropriate data
+    h1["Matruh"] = new ConnectedNode("Matruh" , 174);
+    h1["Cairo"]  = new ConnectedNode("Cairo"  , 126);
+    h1["Nekhel"] = new ConnectedNode("Nekhel" , 133);
+    h1["Siwa"]   = new ConnectedNode("Siwa"   , 132);
+    h1["Bawiti"] = new ConnectedNode("Bawiti" , 105);
+    h1["Asyut"]  = new ConnectedNode("Asyut"  , 52);
+    h1["Suez"]   = new ConnectedNode("Suez"   , 121);
+    h1["Qasr Farafra"] = new ConnectedNode("Qasr Farafra", 68);
+    h1["Quseir"] = new ConnectedNode("Quseir" , 55);
+    h1["Mut"]    = new ConnectedNode("Mut"    , 51);
+    h1["Kharga"] = new ConnectedNode("Kharga" , 24);
+    h1["Sohag"]  = new ConnectedNode("Sohag"  , 27);
+    h1["Qena"]   = new ConnectedNode("Qena"   , 10);
+    h1["Luxor"]  = new ConnectedNode("Luxor"   , 0);
+
+    h2["Matruh"] = new ConnectedNode("Matruh" , 189);
+    h2["Cairo"]  = new ConnectedNode("Cairo"  , 139);
+    h2["Nekhel"] = new ConnectedNode("Nekhel" , 145);
+    h2["Siwa"]   = new ConnectedNode("Siwa"   , 148);
+    h2["Bawiti"] = new ConnectedNode("Bawiti" , 118);
+    h2["Asyut"]  = new ConnectedNode("Asyut"  , 67);
+    h2["Suez"]   = new ConnectedNode("Suez"   , 136);
+    h2["Qasr Farafra"] = new ConnectedNode("Qasr Farafra", 77);
+    h2["Quseir"] = new ConnectedNode("Quseir" , 59);
+    h2["Mut"]    = new ConnectedNode("Mut"    , 65);
+    h2["Kharga"] = new ConnectedNode("Kharga" , 38);
+    h2["Sohag"]  = new ConnectedNode("Sohag"  , 36);
+    h2["Qena"]   = new ConnectedNode("Qena"   , 19);
+    h2["Luxor"]  = new ConnectedNode("Luxor"   , 0);
+
     // Run the Search Function
     // Argument 0 = map of all nodes
     // Argument 1 = queue of expanded nodes
     // Argument 2 = Goal Node
-    GeneralSearch(cityNodes, currentNodes, exploredNodes, cityNodes["Luxor"]);
+    GeneralSearch(cityNodes, currentNodes, exploredNodes, cityNodes["Luxor"], h1, h2);
 
     // Make sure to deallocate everything on the heap
     std::map<std::string, Node*>::iterator mapIterator = cityNodes.begin();
@@ -261,6 +299,21 @@ int main(int argc, char* argv[])
     cityNodes.clear();
     currentNodes.clear();
 
+    std::map<std::string, ConnectedNode*>::iterator tableIterator;
+
+    // Make sure to deallocate the tables when finished
+    for (tableIterator = h1.begin(); tableIterator != h1.end(); ++tableIterator)
+    {
+        delete tableIterator->second;
+    }
+    h1.clear();
+
+    for (tableIterator = h2.begin(); tableIterator != h2.end(); ++tableIterator)
+    {
+        delete tableIterator->second;
+    }
+    h2.clear();
+
     // Exit
 
     std::cout << "Exiting..." << std::endl;
@@ -268,8 +321,8 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void GeneralSearch(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &currentNodes, std::vector<Node*> &exploredNodes, Node *goalNode)
-{
+void GeneralSearch(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &currentNodes, std::vector<Node*> &exploredNodes, Node *goalNode,
+                   std::map<std::string, ConnectedNode*> &h1, std::map<std::string, ConnectedNode*> &h2){
     while (true)
     {
         // If nothing left to search, then exit
@@ -304,9 +357,9 @@ void GeneralSearch(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &
         }
 
         // Queuing Function
-        EnqueueBFS(cityNodes, currentNodes, nodeToTest); // Breadth First Search (BFS)
-        //EnqueueDFS(cityNodes, currentNodes, nodeToTest); // Depth First Search (DFS)
-        //EnqueueUCS(cityNodes, currentNodes, nodeToTest); // Uniform Cost Search (UCS)
+        //EnqueueGreedy(cityNodes, currentNodes, nodeToTest, h1); // Greedy Search H1
+        EnqueueGreedy(cityNodes, currentNodes, nodeToTest, h2); // Greedy Search H2
+
         exploredNodes.push_back(nodeToTest);
     }
 }
@@ -388,6 +441,40 @@ void EnqueueUCS(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &cur
     // Refer to functorUCS for the specific comparison used for std::sort()
     // Notice I do not need a temp list here, I am adding straight to currentNodes
     std::sort(currentNodes.begin(), currentNodes.end(), functorUCS);
+}
+
+void EnqueueGreedy(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &currentNodes, Node *nodeToTest, std::map<std::string, ConnectedNode*> &hTable)
+{
+    // Add values from expanded node into a temp vector
+    std::vector<Node*> expandedNames;
+
+    for (unsigned int i = 0; i < nodeToTest->children.size(); i++)
+    {
+        if (!cityNodes[nodeToTest->children[i].name]->isQueued) // Check to see if the node has already been expanded
+        {
+            expandedNames.push_back(cityNodes[nodeToTest->children[i].name]);
+            expandedNames[expandedNames.size() - 1]->totalCost = hTable[nodeToTest->children[i].name]->cost;
+            expandedNames[expandedNames.size() - 1]->isQueued = true;
+        }
+    }
+
+    // Sort Them -> First based upon cost, and if they are the same, then by name
+    // Refer to functorUCS for the specific comparison used for std::sort()
+    // Notice I do not need a temp list here, I am adding straight to currentNodes
+    std::sort(expandedNames.begin(), expandedNames.end(), functorUCS);
+
+    // Add in the values from expanded names as seen in DFS
+    // That way, we can turn around if the node we use is not correct
+    while (!expandedNames.empty())
+    {
+        currentNodes.insert(currentNodes.begin(), cityNodes[expandedNames[expandedNames.size() - 1]->name]);
+        expandedNames.pop_back();
+    }
+}
+
+void EnqueueAStar(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &currentNodes, Node *nodeToTest, std::map<std::string, ConnectedNode*> &hTable)
+{
+
 }
 
 // Function for GoalTest -> Declared here versus inside GeneralSearch() to make things cleaner

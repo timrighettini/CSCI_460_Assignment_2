@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="CSCI_460_Assignment_1" />
+		<Option title="CSCI_460_Assignment_2" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
