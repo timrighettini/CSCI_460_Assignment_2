@@ -262,8 +262,8 @@ int main(int argc, char* argv[])
     n->name = "Matruh";
     n->isQueued = false;
     n->gCost = 0;
-    n->children.push_back(ConnectedNode("Siwa", 159));
-    n->children.push_back(ConnectedNode("Bawiti", 210));
+    n->children.push_back(ConnectedNode("Siwa", 181));
+    n->children.push_back(ConnectedNode("Alexandria", 159));
 
     cityNodes[n->name] = n;
 
@@ -382,6 +382,19 @@ void GeneralSearch(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &
         EnqueueAStar(cityNodes, currentNodes, nodeToTest, h2); // AStar Search H2
 
         exploredNodes.push_back(nodeToTest);
+
+//        // Print out the explored nodes list
+//        for (int i = 0; i < exploredNodes.size(); i++)
+//        {
+//            std::cout << exploredNodes[i]->name << " ";
+//        }
+//        std::cout << std::endl;
+//
+//        for (int i = 0; i < currentNodes.size(); i++)
+//        {
+//            std::cout << currentNodes[i]->name << " " << currentNodes[i]->gCost << " ";
+//        }
+//        std::cout << std::endl;
     }
 }
 
