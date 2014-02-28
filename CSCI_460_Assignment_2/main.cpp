@@ -1,4 +1,4 @@
-// CSCI_460_Assignment_1.cpp : Defines the entry point for the console application.
+// CSCI_460_Assignment_2.cpp : Defines the entry point for the console application.
 //
 
 // Preprocessor Directives
@@ -9,7 +9,6 @@
 #include <map>
 #include <algorithm>
 
-// NOTE: -std=gnu++0x or -std=c++0x must be enabled for c++ 2011 stuff to work
 // NOTEL C++ 2011 does NOT work on aludra, using C++ 1998 for this assignment
 
 // Globals to be used for the program
@@ -42,22 +41,6 @@ struct Node // Struct for holding node information
     bool isQueued; // If the Node is expanded, this will be true, will prevent loops
 };
 
-// Used for UCS sorting comparison
-//struct FunctorUCS
-//{
-//        // Overloading () operators for std::sort()
-//    bool operator ()(Node *a, Node *b)
-//    {
-//        if (a->gCost < b->gCost) return true;
-//        if (a->gCost > b->gCost) return false;
-//
-//        if (a->name < b->name) return true;
-//        if (a->name > b->name) return false;
-//
-//        return false;
-//    }
-//} functorUCS;
-
 // Used for A* sorting comparison
 struct FunctorAStar
 {
@@ -78,9 +61,6 @@ bool isUCS = false;
 
 // Function Prototypes
 void GeneralSearch(std::map<std::string, Node*>&, std::vector<Node*> &, std::vector<Node*> &, Node *, std::map<std::string, ConnectedNode*> &, std::map<std::string, ConnectedNode*> &);
-//void EnqueueBFS(std::map<std::string, Node*>&, std::vector<Node*> &, Node *);
-//void EnqueueDFS(std::map<std::string, Node*>&, std::vector<Node*> &, Node *);
-//void EnqueueUCS(std::map<std::string, Node*>&, std::vector<Node*> &, Node *);
 void EnqueueGreedy(std::map<std::string, Node*>&, std::vector<Node*> &, Node *, std::map<std::string, ConnectedNode*> &);
 void EnqueueAStar(std::map<std::string, Node*>&, std::vector<Node*> &, Node *, std::map<std::string, ConnectedNode*> &);
 
@@ -314,6 +294,7 @@ int main(int argc, char* argv[])
     for (mapIterator = cityNodes.begin(); mapIterator != cityNodes.end(); ++mapIterator)
     {
         delete mapIterator->second;
+        mapIterator->second = NULL;
     }
     cityNodes.clear();
     currentNodes.clear();
@@ -324,12 +305,14 @@ int main(int argc, char* argv[])
     for (tableIterator = h1.begin(); tableIterator != h1.end(); ++tableIterator)
     {
         delete tableIterator->second;
+        tableIterator->second = NULL;
     }
     h1.clear();
 
     for (tableIterator = h2.begin(); tableIterator != h2.end(); ++tableIterator)
     {
         delete tableIterator->second;
+        tableIterator->second = NULL;
     }
     h2.clear();
 
@@ -382,100 +365,8 @@ void GeneralSearch(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &
         //EnqueueAStar(cityNodes, currentNodes, nodeToTest, h2); // AStar Search H2
 
         exploredNodes.push_back(nodeToTest);
-
-//        // Print out the explored nodes list
-//        for (int i = 0; i < exploredNodes.size(); i++)
-//        {
-//            std::cout << exploredNodes[i]->name << " ";
-//        }
-//        std::cout << std::endl;
-//
-//        for (int i = 0; i < currentNodes.size(); i++)
-//        {
-//            std::cout << currentNodes[i]->name << " " << currentNodes[i]->gCost << " ";
-//        }
-//        std::cout << std::endl;
     }
 }
-
-//void EnqueueBFS(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &currentNodes, Node *nodeToTest)
-//{
-//    // Add values from expanded node into a temp vector
-//    std::vector<std::string> expandedNames;
-//
-//    for (unsigned int i = 0; i < nodeToTest->children.size(); i++)
-//    {
-//        if (!cityNodes[nodeToTest->children[i].name]->isQueued) // Check to see if the node has already been expanded
-//        {
-//            expandedNames.push_back(nodeToTest->children[i].name);
-//        }
-//    }
-//
-//    // Sort Them
-//    std::sort(expandedNames.begin(), expandedNames.end());
-//
-//    // Add them into the currentNodes Queue
-//    // Insert each element into the back of the vector,
-//    // as seen with a queue data structure
-//    while (!expandedNames.empty())
-//    {
-//        currentNodes.push_back(cityNodes[expandedNames[0]]);
-//        cityNodes[expandedNames[0]]->isQueued = true;
-//        expandedNames.erase(expandedNames.begin());
-//    }
-//}
-//
-//void EnqueueDFS(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &currentNodes, Node *nodeToTest)
-//{
-//    // Add values from expanded node into a temp vector
-//    std::vector<std::string> expandedNames;
-//
-//    for (unsigned int i = 0; i < nodeToTest->children.size(); i++)
-//    {
-//        if (!cityNodes[nodeToTest->children[i].name]->isQueued) // Check to see if the node has already been expanded
-//        {
-//            expandedNames.push_back(nodeToTest->children[i].name);
-//        }
-//    }
-//
-//    // Sort Them
-//    std::sort(expandedNames.begin(), expandedNames.end());
-//
-//    // Add them into the currentNodes Stack in reverse order
-//    // so currentNodes acts like a stack, and the node that
-//    // is first in the temp list comes up first.
-//    while (!expandedNames.empty())
-//    {
-//        currentNodes.insert(currentNodes.begin(), cityNodes[expandedNames[expandedNames.size() - 1]]);
-//        cityNodes[expandedNames[expandedNames.size() - 1]]->isQueued = true;
-//        expandedNames.erase(expandedNames.end());
-//    }
-//}
-//
-//void EnqueueUCS(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &currentNodes, Node *nodeToTest)
-//{
-//    isUCS = true;
-//    for (unsigned int i = 0; i < nodeToTest->children.size(); i++)
-//    {
-//        if (!cityNodes[nodeToTest->children[i].name]->isQueued) // Check to see if the node has already been expanded
-//        {
-//            currentNodes.push_back(cityNodes[nodeToTest->children[i].name]);
-//            currentNodes[currentNodes.size() - 1]->gCost = nodeToTest->gCost + nodeToTest->children[i].cost;
-//            currentNodes[currentNodes.size() - 1]->isQueued = true;
-//        }
-//        // Check where the cost for something to a node is less than another way, and overwrite the more expensive cost
-//        else if (nodeToTest->gCost + nodeToTest->children[i].cost < cityNodes[nodeToTest->children[i].name]->gCost)
-//        {
-//            // This is why I like pointers -> I do not need to loop again to find what I need to change
-//            cityNodes[nodeToTest->children[i].name]->gCost = nodeToTest->gCost + nodeToTest->children[i].cost;
-//        }
-//    }
-//
-//    // Sort Them -> First based upon cost, and if they are the same, then by name
-//    // Refer to functorUCS for the specific comparison used for std::sort()
-//    // Notice I do not need a temp list here, I am adding straight to currentNodes
-//    std::sort(currentNodes.begin(), currentNodes.end(), functorUCS);
-//}
 
 void EnqueueGreedy(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &currentNodes, Node *nodeToTest, std::map<std::string, ConnectedNode*> &hTable)
 {
@@ -493,8 +384,8 @@ void EnqueueGreedy(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &
         }
     }
 
-    // Sort Them -> First based upon cost, and if they are the same, then by name
-    // Refer to functorUCS for the specific comparison used for std::sort()
+    // Sort Them -> First based upon hCost cost, and if they are the same, then by name
+    // Refer to functorAStar for the specific comparison used for std::sort()
     // Notice I do not need a temp list here, I am adding straight to currentNodes
     std::sort(currentNodes.begin(), currentNodes.end(), functorAStar);
 }
@@ -524,8 +415,8 @@ void EnqueueAStar(std::map<std::string, Node*> &cityNodes, std::vector<Node*> &c
         }
     }
 
-    // Sort Them -> First based upon cost, and if they are the same, then by name
-    // Refer to functorUCS for the specific comparison used for std::sort()
+    // Sort Them -> First based upon hCost + gCost, and if they are the same, then by name
+    // Refer to functorAStar for the specific comparison used for std::sort()
     // Notice I do not need a temp list here, I am adding straight to currentNodes
     std::sort(currentNodes.begin(), currentNodes.end(), functorAStar);
 }
