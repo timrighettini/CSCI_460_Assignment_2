@@ -42,24 +42,52 @@ on your output data (i.e., the examined nodes)?
 Based upon my output data, both heuristics provided the same results for A*, but h2 performed a more efficient greedy serach than h1.  To fully explain why A* performed the way it did, I will also need to elaborate upon the results of the greedy search too.
 
 Specifically:
- - For greedy search: h2 examined one less node than h1 (h2 skipped Kharga).  h2 skipped        Kahrga because in h2 Sohag has a lower heuristic value than Kharga.  In h1 the opposite      is true, so h1 actually went to Kharga before reaching Sohag, resulting in a slightly        less efficient search versus h2. 
+ - For greedy search: h2 examined one less node than h1 (h2 skipped Kharga).  h2 skipped        
+   Kahrga because in h2 Sohag has a lower heuristic value than Kharga.  In h1 the opposite
+   is true, so h1 actually went to Kharga before reaching Sohag, resulting in a slightly        
+   less efficient search versus h2. 
 
- - For A* search: h1 and h2 examined the same number of nodes (all of them, which is 15).       Both heuristics found the cheapest path, though, which was 775 cost.  Greedy search did      NOT find a path cheaper than this (h1 and h2 both found the path of 814 cost by going the    western route through Mut).
+ - For A* search: h1 and h2 examined the same number of nodes (all of them, which is 15).
+   Both heuristics found the cheapest path, though, which was 775 cost.  Greedy search did
+   NOT find a path cheaper than this (h1 and h2 both found the path of 814 cost by going the
+   western route through Mut).
 
- - A* might have searched through more nodes, but it found the cheapest path as a result.       Thus, A* is more consistent than greedy search, which might be better than efficiency in     some cases if you want the best solution versus a dirtier solution that is found quickly.
+ - A* might have searched through more nodes, but it found the cheapest path as a result.
+   Thus, A* is more consistent than greedy search, which might be better than efficiency in
+   some cases if you want the best solution versus a dirtier solution that is found quickly.
 
 There are a few takeaways here:
-1.  Greedy search may find a descent path by checking less nodes, which means it can be more     efficient if you are lucky.  Just because you check less nodes does not mean it will         provide the cheapest solution in terms of path cost.  A* might search through more nodes     on average, but it will usually find the cheapest path in the end.
+1.  Greedy search may find a descent path by checking less nodes, which means it can be more
+    efficient if you are lucky.  Just because you check less nodes does not mean it will
+    provide the cheapest solution in terms of path cost.  A* might search through more nodes
+    on average, but it will usually find the cheapest path in the end.
 
-2.  A good heuristic makes greedy search work well.  The more accurate the heuristic is, the     better greedy search will perform.  If h(x) was the remaining path cost to get to Luxor,     for example, greedy search would work like an inversed uniform cost search and h(x)          would be both an admissable and accurate heuristic.  Thus, do not use greedy search with     an admissible but highly inaccurate heuristic.  Since A* uses both the actual path cost      and a heuristic, it is not as reliant on the hueristic and will not resort to as much        wacky behavior if its hueristic is inaccurate.
+2.  A good heuristic makes greedy search work well.  The more accurate the heuristic is, the
+    better greedy search will perform.  If h(x) was the remaining path cost to get to Luxor,
+    for example, greedy search would work like an inversed uniform cost search and h(x)   
+    would be both an admissable and accurate heuristic.  Thus, do not use greedy search with 
+    an admissible but highly inaccurate heuristic.  Since A* uses both the actual path cost
+    and a heuristic, it is not as reliant on the hueristic and will not resort to as much        
+    wacky behavior if its hueristic is inaccurate.
 
 B. Provide explanations of how your data either matches the expected or predicted analytical result or why it does not match the expected or predicted result. 
 
 My data from the assignment matches the expected or predicted analytical result because:
-1.  For EnqueueGreedy(...), the expanded values are sorted based upon only their heuristic       cost.  As such, when looking at the SLD distances provided in the assignment, it makes       sense why the search took the order it did in both cases.
-    a.  Both sets of hueristics have a similar data trend.  When sorting these values in             either search at any given point, most of the values have positioning in terms of            h(x) cost, except for Kharga, which has less cost that Sohag in h1 versus h2.          Although the costs have different actual values, their relative placement is mostly         the same, which explains why the greedy searches almost performed similarly.
+1.  For EnqueueGreedy(...), the expanded values are sorted based upon only their heuristic 
+    cost.  As such, when looking at the SLD distances provided in the assignment, it makes
+    sense why the search took the order it did in both cases.
+    a.  Both sets of hueristics have a similar data trend.  When sorting these values in 
+        either search at any given point, most of the values have positioning in terms of
+        h(x) cost, except for Kharga, which has less cost that Sohag in h1 versus h2.  
+        Although the costs have different actual values, their relative placement is mostly
+        the same, which explains why the greedy searches almost performed similarly.
 
-2.  For EnqueueAStar(...), on the other hand, h(x) plays an important role in determining        the total cost of any given node, but the path cost to get to a certain node also plays      a big factor in sorting nodes too.  As such, since the relative ordering/hierarchy of        heuristic costs is similar for h1 and h2 (as explained for greedy search), A* performs       the same for h1 and h2 because g(x) is the same at any given point where a heuristic         from h1 or h2 is compared also.  For example:
+2.  For EnqueueAStar(...), on the other hand, h(x) plays an important role in determining  
+    the total cost of any given node, but the path cost to get to a certain node also plays 
+    a big factor in sorting nodes too.  As such, since the relative ordering/hierarchy of   
+    heuristic costs is similar for h1 and h2 (as explained for greedy search), A* performs 
+    the same for h1 and h2 because g(x) is the same at any given point where a heuristic   
+    from h1 or h2 is compared also.  For example:
 
     If I am on Alexandria, and
     g(Cairo)  = 112   
@@ -70,7 +98,12 @@ My data from the assignment matches the expected or predicted analytical result 
     h1(Nekhel) = 133   h2(Nekhel) = 148
     h1(Matruh) = 174   h2(Matruh) = 189
 
-    Based upon the implicit ordering of both hueristics, I know I will be going to Cairo in      either case for A* (and even greedy).  This holds true for every expansion except when       comparing Kharga in greedy, since its implicit place in the ordering of h1 and h2 is         different. The reason why A* returns the same result at this point is because g(Kharga)      + h1(Kharga) || h2(Kharga) is cheaper than g(Sohag) + h1(Sohag) || h2(Sohag) in terms of     f(x) = g(x) + h(x) cost.  
+    Based upon the implicit ordering of both hueristics, I know I will be going to Cairo in  
+    either case for A* (and even greedy).  This holds true for every expansion except when 
+    comparing Kharga in greedy, since its implicit place in the ordering of h1 and h2 is 
+    different. The reason why A* returns the same result at this point is because g(Kharga) 
+    + h1(Kharga) || h2(Kharga) is cheaper than g(Sohag) + h1(Sohag) || h2(Sohag) in terms of
+    f(x) = g(x) + h(x) cost.  
 
 -------------------------------------------
 
